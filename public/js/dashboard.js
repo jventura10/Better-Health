@@ -4,6 +4,7 @@ $(document).ready(function () {
   var docID;
   var docTitle;
   var docSP;
+  var socket = io();
 
   //MESSAGES
   $("#msgBtn").on("click", function () {
@@ -60,11 +61,11 @@ $(document).ready(function () {
     $("#msgModalTitle").empty();
 
     $("#msgModalTitle").append("<h2 class='uk-modal-title'>" + docFName + " " + docLName + "</h2>");
-    getMessages(docFName);
+    getMessages();
 
-});
+  });
 
-  function getMessages(docFName) {
+  function getMessages() {
     $.ajax({
       method: "GET",
       url: "/api/messages/" + docID
@@ -78,17 +79,17 @@ $(document).ready(function () {
           let msgBody = $("<div class='msgBody'>" + "<h5>" + result[i].body + "</h5>" + "</div>");
           $("#msgModalBody").append(msgBody);
           //$("#msgModalBody").append("<small>Sent at: " + result[i].createdAt + "</small><br>");
-          if(result[i].receiver_id === docID) {
+          if (result[i].receiver_id === docID) {
             //console.log("staff is the receiver" + result[i].body);
-            msgBody.css({'position': "absolute", 'padding-left': '6px', 'padding-right': '6px', "right": "24px","color": "white", "background-color": "#00FA9A", "border-radius": "4px"});
+            msgBody.css({ 'position': "absolute", 'padding-left': '6px', 'padding-right': '6px', "right": "24px", "color": "white", "background-color": "#00FA9A", "border-radius": "4px" });
             $("<br>").appendTo($("#msgModalBody"));
             $("<br>").appendTo($("#msgModalBody"));
-           } else {
-             //console.log("patient is the receiver " + result[i].body);
-             msgBody.css({'position':'absolute', 'left':'24px', 'padding-left': '6px', 'padding-right': '6px', "color": 'white', "background-color": "#20B2AA", "border-radius": "4px"});
-             $("<br>").appendTo($("#msgModalBody"));
-             $("<br>").appendTo($("#msgModalBody"));
-           }
+          } else {
+            //console.log("patient is the receiver " + result[i].body);
+            msgBody.css({ 'position': 'absolute', 'left': '24px', 'padding-left': '6px', 'padding-right': '6px', "color": 'white', "background-color": "#20B2AA", "border-radius": "4px" });
+            $("<br>").appendTo($("#msgModalBody"));
+            $("<br>").appendTo($("#msgModalBody"));
+          }
         }
       }
       else {
@@ -100,7 +101,7 @@ $(document).ready(function () {
       let msgInput = $("<input type='text' class='uk-input' id='msgBody' placeholder='Send Message...'>");
       msgForm.append(msgDiv);
       $(msgDiv).append(msgInput);
-      $(msgDiv).append("<button id='msgSubmitBtn' class='btn uk-align-right'>Send</button>");
+      $(msgDiv).append("<button id='msgSubmitBtn' type='button' class='btn uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom'>Send</button>");
       $("#msgModalBody").append(msgForm);
     });
   }
@@ -120,6 +121,8 @@ $(document).ready(function () {
       getMessages();
     });
   });
+
+  socket.on('message', getMessages);
   //END OF MESSAGES
 
   //BOOK APPOINTMENT
@@ -187,7 +190,7 @@ $(document).ready(function () {
     var newForm = $("<form>").addClass("uk-grid-small");
 
     // This is for the date-picker
-    $(newForm).append("Date:   <input type='text' class='uk-input'   id='dateField'><br><br>");  
+    $(newForm).append("Date:   <input type='text' class='uk-input'   id='dateField'><br><br>");
     $(newForm).append("Time:   <input type='text' class='uk-input' id='timeField'><br><br>");
     $(newForm).append("Reason: <input type='text' class='uk-input' id='reasonField'><br><br>");
     $(newForm).append("<br><button class='btn uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom' id='bookFormSubmit'>Submit</button>");
@@ -204,9 +207,9 @@ $(document).ready(function () {
     var apptReason = $("#reasonField").val();
 
     var newAppt = {
-      date: $("#dateField").val(),
-      time: $("#timeField").val(),
-      appt_reason: $("#reasonField").val(),
+      date: dateField,
+      time: timeField,
+      appt_reason: apptReason,
       staff_fName: docFName,
       staff_lName: docLName,
     };
@@ -218,17 +221,14 @@ $(document).ready(function () {
       data: newAppt
     }).then(function (result) {
       //console.log(result);
+      $("#bookModalBody").empty();
 
+      $("#bookModalTitle").text("Appointment Confirmation Details");
+
+      $("#bookModalBody").append("<h2>Date:</h2><h3>" + dateField + "</h3>");
+      $("#bookModalBody").append("<h2>Time:</h2><h3>" + timeField + "</h3>");
+      $("#bookModalBody").append("<h2>Reason:</h2><h3>" + apptReason + "</h3>");
     });
-
-    $("#bookModalBody").empty();
-
-    $("#bookModalTitle").text("Appointment Confirmation Details");
-
-    $("#bookModalBody").append("<h2>Date:</h2><h3>" + dateField + "</h3>");
-    $("#bookModalBody").append("<h2>Time:</h2><h3>" + timeField + "</h3>");
-    $("#bookModalBody").append("<h2>Reason:</h2><h3>" + apptReason + "</h3>");
-
 
     setTimeout(function () { location.reload(); }, 3000);
 

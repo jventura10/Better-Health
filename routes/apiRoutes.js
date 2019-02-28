@@ -2,7 +2,7 @@ var db = require("../models");
 var passport = require("passport");
 var sequelize = require("sequelize");
 
-module.exports = function (app) {
+module.exports = function (app,passport,io) {
 
   //PATIENT GET INFO
   app.get("/api/messages/:id", function (req, res) {
@@ -150,7 +150,7 @@ module.exports = function (app) {
         receiver_fName: req.body.receiver_fName,
         receiver_lName: req.body.receiver_lName
       });
-
+      io.emit('message', req.body);
       res.status(200);
       res.send("Message Sent!");
     }
@@ -218,13 +218,14 @@ module.exports = function (app) {
         receiver_fName: req.body.receiver_fName,
         receiver_lName: req.body.receiver_lName
       });
-      console.log("This is the staff's type" + req.session.passport.user.type);
+      //console.log("This is the staff's type" + req.session.passport.user.type);
+      io.emit('sMessage', req.body);
       res.status(200);
       res.send("Message Sent!");
     }
     else {
       res.send("Permission Not Given.");
-      console.log("FAAAAAAAAAAAAILED");
+      //console.log("FAAAAAAAAAAAAILED");
     }
   });
   //END OF STAFF POST INFO

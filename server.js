@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 var express = require("express");
+var app = express();
 var bodyParse = require("body-parser");
 var exphbs = require("express-handlebars");
 
@@ -8,9 +9,9 @@ var passport = require("passport");
 var flash = require("connect-flash");
 var cookieParser = require("cookie-parser");
 var session = require("express-session");
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-
-var app = express();
 var PORT = process.env.PORT || 8080;
 
 var db = require("./models");
@@ -33,7 +34,7 @@ app.set("view engine", "handlebars");
 app.use(express.static("public"));
 
 app.use(session({
-  key:'key',
+  key: 'key',
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -47,8 +48,8 @@ app.use(passport.session());
 app.use(flash());
 
 // Routes
-require("./routes/apiRoutes")(app,passport);
-require("./routes/htmlRoutes")(app,passport);
+require("./routes/apiRoutes")(app, passport,io);
+require("./routes/htmlRoutes")(app, passport);
 
 var syncOptions = { force: false };
 
@@ -58,14 +59,15 @@ if (process.env.NODE_ENV === "test") {
   syncOptions.force = true;
 }
 
+io.on('connection', () => {
+  console.log('a user is connected')
+});
+
 // Starting the server, syncing our models ------------------------------------/
-db.sequelize.sync(syncOptions).then(function() {
-  app.listen(PORT, function() {
-    console.log(
-      "==> 🌎  Listening on port %s. Visit http://localhost:%s/ in your browser.",
-      PORT,
-      PORT
-    );
+db.sequelize.sync(syncOptions).then(function () {
+  // Starting the server, syncing our models ------------------------------------/
+  var server = http.listen(3000, () => {
+    console.log('server is running on port', server.address().port);
   });
 });
 

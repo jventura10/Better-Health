@@ -2,6 +2,7 @@ $(document).ready(function () {
     var pFName;
     var pLName;
     var pID;
+    var socket = io();
 
     //STAFF APPOINTMENTS
     $("#apptsBtn").on("click", function () {
@@ -153,7 +154,7 @@ $(document).ready(function () {
             let msgInput = $("<input type='text' class='uk-input' id='msgBody' placeholder='Send Message...'>");
             msgForm.append(msgDiv);
             $(msgDiv).append(msgInput);
-            $(msgDiv).append("<button id='msgSubmitBtn' class='btn uk-align-right'>Send</button>");
+            $(msgDiv).append("<button id='msgSubmitBtn' type='button' class='btn uk-button uk-button-primary uk-width-1-1 uk-margin-small-bottom'>Send</button>");
             $("#staffMsgBody").append(msgForm);
 
             // var msgForm = $("<form>").addClass("uk-grid-small");
@@ -178,6 +179,8 @@ $(document).ready(function () {
             getMessages();
         });
     });
+
+    socket.on('sMessage', getMessages);
     //END OF MESSAGES
 
     //Search RECORDS
